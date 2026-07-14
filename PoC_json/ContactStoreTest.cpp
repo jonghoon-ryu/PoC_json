@@ -144,6 +144,23 @@ TEST(ContactStoreTest, FindByNameIsCaseInsensitiveSubstringMatch)
     EXPECT_TRUE(matches.empty());
 }
 
+TEST(ContactStoreTest, FindByNameMatchesAcrossFirstAndLastNameTogether)
+{
+    ContactStore store;
+    store.add(makeContact("Ada", "Lovelace"));
+    store.add(makeContact("Alan", "Turing"));
+
+    // Full "first last" query.
+    EXPECT_THAT(store.findByName("Ada Lovelace"), testing::ElementsAre(0u));
+    EXPECT_THAT(store.findByName("ada lovelace"), testing::ElementsAre(0u));
+
+    // Query spanning the boundary between first and last name.
+    EXPECT_THAT(store.findByName("da Love"), testing::ElementsAre(0u));
+
+    // Last-name-only query still matches.
+    EXPECT_THAT(store.findByName("Turing"), testing::ElementsAre(1u));
+}
+
 TEST(ContactStoreTest, FindByPhoneSubstringMatch)
 {
     ContactStore store;
