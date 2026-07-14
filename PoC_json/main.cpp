@@ -197,6 +197,21 @@ void findByName(const ContactStore& store)
     }
 }
 
+void findByPhone(const ContactStore& store)
+{
+    std::string query = prompt("Phone contains: ");
+    std::vector<size_t> matches = store.findByPhone(query);
+    if (matches.empty())
+    {
+        std::cout << "No matches.\n";
+        return;
+    }
+    for (size_t index : matches)
+    {
+        printContact(index, store.get(index));
+    }
+}
+
 void printMenu(const ContactStore& store)
 {
     std::cout << "\n=== Contact List (" << store.count() << ") ===\n"
@@ -205,6 +220,7 @@ void printMenu(const ContactStore& store)
         << "3. Update contact\n"
         << "4. Delete contact\n"
         << "5. Find by name\n"
+        << "6. Find by phone\n"
         << "0. Exit\n"
         << "> ";
 }
@@ -262,6 +278,10 @@ int main(void)
         else if (choice == 5)
         {
             findByName(store);
+        }
+        else if (choice == 6)
+        {
+            findByPhone(store);
         }
         else
         {

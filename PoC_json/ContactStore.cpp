@@ -160,3 +160,17 @@ std::vector<size_t> ContactStore::findByName(const std::string& query) const
     }
     return result;
 }
+
+std::vector<size_t> ContactStore::findByPhone(const std::string& query) const
+{
+    std::vector<size_t> result;
+    const auto& arr = contacts_.asArray();
+    for (size_t i = 0; i < arr.size(); ++i)
+    {
+        if (arr[i].at("phone").asString().find(query) != std::string::npos)
+        {
+            result.push_back(i);
+        }
+    }
+    return result;
+}

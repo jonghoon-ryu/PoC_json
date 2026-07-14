@@ -144,6 +144,29 @@ TEST(ContactStoreTest, FindByNameIsCaseInsensitiveSubstringMatch)
     EXPECT_TRUE(matches.empty());
 }
 
+TEST(ContactStoreTest, FindByPhoneSubstringMatch)
+{
+    ContactStore store;
+    Contact ada = makeContact("Ada", "Lovelace");
+    ada.phone = "010-1111-2222";
+    Contact alan = makeContact("Alan", "Turing");
+    alan.phone = "010-1111-3333";
+    Contact grace = makeContact("Grace", "Hopper");
+    grace.phone = "010-9999-9999";
+    store.add(ada);
+    store.add(alan);
+    store.add(grace);
+
+    std::vector<size_t> matches = store.findByPhone("1111");
+    EXPECT_THAT(matches, testing::ElementsAre(0u, 1u));
+
+    matches = store.findByPhone("010-9999-9999");
+    EXPECT_THAT(matches, testing::ElementsAre(2u));
+
+    matches = store.findByPhone("010-0000-0000");
+    EXPECT_TRUE(matches.empty());
+}
+
 TEST(ContactStoreTest, LoadFromMissingFileStartsEmpty)
 {
     ContactStore store;

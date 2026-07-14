@@ -47,6 +47,9 @@ public:
     // matching indices.
     std::vector<size_t> findByName(const std::string& query) const;
 
+    // Substring match on phone; returns matching indices.
+    std::vector<size_t> findByPhone(const std::string& query) const;
+
 private:
     JsonValue contacts_ = JsonValue::makeArray();
 };
