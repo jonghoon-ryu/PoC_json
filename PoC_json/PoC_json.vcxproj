@@ -148,10 +148,13 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ContactTestData.cpp" />
+    <ClCompile Include="ContactStore.cpp" />
     <ClCompile Include="JsonTest.cpp" />
+    <ClCompile Include="ContactStoreTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ContactTestData.h" />
+    <ClInclude Include="ContactStore.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JsonLib\JsonLib.vcxproj">

@@ -24,12 +24,21 @@
     <ClCompile Include="ContactTestData.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="ContactStore.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
     <ClCompile Include="JsonTest.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ContactStoreTest.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ContactTestData.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ContactStore.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

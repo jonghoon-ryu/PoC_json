@@ -3,6 +3,6 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="PoC_json.vcxproj" />
-  <Project Path="..\JsonLib\JsonLib.vcxproj" />
+  <Project Path="PoC_json.vcxproj" Id="10f11c51-9b02-48d9-91b8-5ae19577d543" />
+  <Project Path="..\JsonLib\JsonLib.vcxproj" Id="2c9d7f2b-6a5b-4d9f-9a8e-3a0f6b7c1a20" />
 </Solution>

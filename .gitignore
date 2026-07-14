@@ -9,3 +9,6 @@ Release/
 # NuGet
 packages/
 *.nupkg
+
+# Runtime-generated contact data (test/demo output, not source)
+contacts.json
