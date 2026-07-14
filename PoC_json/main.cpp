@@ -31,8 +31,8 @@ std::string prompt(const std::string& label)
 
 void printContact(size_t index, const Contact& c)
 {
-    std::cout << index << ". " << c.name << " | " << c.phone
-        << " | " << c.company << " | " << c.dob << "\n";
+    std::cout << index << ". " << c.firstName << " " << c.lastName << " | " << c.phone
+        << " | " << c.company.value_or("NA") << " | " << c.dob.value_or("NA") << "\n";
 }
 
 void listAll(const ContactStore& store)
@@ -48,13 +48,63 @@ void listAll(const ContactStore& store)
     }
 }
 
+// Reads a 1/2 choice ("1. Enter value" / "2. Skip"), re-prompting until one
+// of those is given. Returns true for "1" (enter), false for "2" (skip).
+bool promptEnterOrSkip()
+{
+    while (true)
+    {
+        std::cout << "  1. Enter value\n"
+            << "  2. Skip\n";
+        std::string choice = prompt("Choice (1/2): ");
+        if (choice == "1")
+        {
+            return true;
+        }
+        if (choice == "2")
+        {
+            return false;
+        }
+        std::cout << "Please enter 1 or 2.\n";
+    }
+}
+
+std::optional<std::string> promptCompany()
+{
+    std::cout << "Company:\n";
+    if (!promptEnterOrSkip())
+    {
+        return std::nullopt;
+    }
+    return prompt("Company: ");
+}
+
+std::optional<std::string> promptDob()
+{
+    std::cout << "DOB:\n";
+    if (!promptEnterOrSkip())
+    {
+        return std::nullopt;
+    }
+    while (true)
+    {
+        std::string dob = prompt("DOB (YYYY-MM-DD): ");
+        if (isValidDob(dob))
+        {
+            return dob;
+        }
+        std::cout << "Invalid date, please try again.\n";
+    }
+}
+
 Contact readContactFromInput()
 {
     Contact c;
-    c.name = prompt("Name: ");
+    c.firstName = prompt("First name: ");
+    c.lastName = prompt("Last name: ");
     c.phone = prompt("Phone: ");
-    c.company = prompt("Company: ");
-    c.dob = prompt("DOB (YYYY-MM-DD): ");
+    c.company = promptCompany();
+    c.dob = promptDob();
     return c;
 }
 

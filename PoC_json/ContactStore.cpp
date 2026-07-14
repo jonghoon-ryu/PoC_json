@@ -1,29 +1,43 @@
 #include "ContactStore.h"
 
 #include <algorithm>
+#include <cctype>
+#include <chrono>
 #include <filesystem>
 #include <stdexcept>
 
 namespace
 {
 
+JsonValue optionalToJson(const std::optional<std::string>& value)
+{
+    return value ? JsonValue(*value) : JsonValue();
+}
+
+std::optional<std::string> jsonToOptional(const JsonValue& value)
+{
+    return value.isNull() ? std::nullopt : std::optional<std::string>(value.asString());
+}
+
 JsonValue toJson(const Contact& contact)
 {
     JsonValue v = JsonValue::makeObject();
-    v["name"] = JsonValue(contact.name);
+    v["firstName"] = JsonValue(contact.firstName);
+    v["lastName"] = JsonValue(contact.lastName);
     v["phone"] = JsonValue(contact.phone);
-    v["company"] = JsonValue(contact.company);
-    v["dob"] = JsonValue(contact.dob);
+    v["company"] = optionalToJson(contact.company);
+    v["dob"] = optionalToJson(contact.dob);
     return v;
 }
 
 Contact fromJson(const JsonValue& v)
 {
     Contact contact;
-    contact.name = v.at("name").asString();
+    contact.firstName = v.at("firstName").asString();
+    contact.lastName = v.at("lastName").asString();
     contact.phone = v.at("phone").asString();
-    contact.company = v.at("company").asString();
-    contact.dob = v.at("dob").asString();
+    contact.company = jsonToOptional(v.at("company"));
+    contact.dob = jsonToOptional(v.at("dob"));
     return contact;
 }
 
@@ -34,7 +48,38 @@ std::string toLower(const std::string& s)
     return out;
 }
 
+bool isAllDigits(const std::string& s)
+{
+    return !s.empty() && std::all_of(s.begin(), s.end(), [](unsigned char c) { return std::isdigit(c) != 0; });
+}
+
 } // namespace
+
+bool isValidDob(const std::string& dob)
+{
+    if (dob.size() != 10 || dob[4] != '-' || dob[7] != '-')
+    {
+        return false;
+    }
+    std::string yearStr = dob.substr(0, 4);
+    std::string monthStr = dob.substr(5, 2);
+    std::string dayStr = dob.substr(8, 2);
+    if (!isAllDigits(yearStr) || !isAllDigits(monthStr) || !isAllDigits(dayStr))
+    {
+        return false;
+    }
+
+    int year = std::stoi(yearStr);
+    int month = std::stoi(monthStr);
+    int day = std::stoi(dayStr);
+
+    std::chrono::year_month_day ymd{
+        std::chrono::year{year},
+        std::chrono::month{static_cast<unsigned>(month)},
+        std::chrono::day{static_cast<unsigned>(day)}
+    };
+    return ymd.ok();
+}
 
 void ContactStore::load(const std::string& path)
 {
@@ -94,8 +139,8 @@ std::vector<size_t> ContactStore::findByName(const std::string& query) const
     const auto& arr = contacts_.asArray();
     for (size_t i = 0; i < arr.size(); ++i)
     {
-        std::string name = toLower(arr[i].at("name").asString());
-        if (name.find(needle) != std::string::npos)
+        std::string fullName = arr[i].at("firstName").asString() + " " + arr[i].at("lastName").asString();
+        if (toLower(fullName).find(needle) != std::string::npos)
         {
             result.push_back(i);
         }

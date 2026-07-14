@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -8,11 +9,17 @@
 
 struct Contact
 {
-    std::string name;
+    std::string firstName;
+    std::string lastName;
     std::string phone;
-    std::string company;
-    std::string dob;
+    std::optional<std::string> company;
+    std::optional<std::string> dob;
 };
+
+// Returns true if dob is a real calendar date in "YYYY-MM-DD" format
+// (rejects malformed strings and non-existent dates like "1900-00-00" or
+// "2021-02-30").
+bool isValidDob(const std::string& dob);
 
 // Manages an in-memory contact list backed by a JSON file (via JsonLib).
 // Indices are positions in the current list, valid until the next add/
@@ -32,7 +39,8 @@ public:
     void update(size_t index, const Contact& contact);
     void remove(size_t index);
 
-    // Case-insensitive substring match on name; returns matching indices.
+    // Case-insensitive substring match on "firstName lastName"; returns
+    // matching indices.
     std::vector<size_t> findByName(const std::string& query) const;
 
 private:

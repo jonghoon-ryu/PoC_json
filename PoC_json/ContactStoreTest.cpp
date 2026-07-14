@@ -1,7 +1,8 @@
-// Tests for ContactStore's CRUD operations (see ContactStore.h). The
-// interactive console loop in main.cpp isn't unit-tested here directly;
-// these tests cover the data-manipulation functions it drives. Only
-// compiled/run in Debug builds; main()/RUN_ALL_TESTS() lives in main.cpp.
+// Tests for ContactStore's CRUD operations and DOB validation (see
+// ContactStore.h). The interactive console loop in main.cpp isn't
+// unit-tested here directly; these tests cover the data-manipulation
+// functions it drives. Only compiled/run in Debug builds; main()/
+// RUN_ALL_TESTS() lives in main.cpp.
 
 #ifdef _DEBUG
 
@@ -14,9 +15,33 @@
 namespace
 {
 
-Contact makeContact(const std::string& name)
+Contact makeContact(const std::string& firstName, const std::string& lastName = "Doe")
 {
-    return Contact{ name, "010-1234-5678", "Acme Corp", "1990-01-01" };
+    return Contact{ firstName, lastName, "010-1234-5678", "Acme Corp", "1990-01-01" };
+}
+
+TEST(IsValidDobTest, AcceptsRealDates)
+{
+    EXPECT_TRUE(isValidDob("1990-01-01"));
+    EXPECT_TRUE(isValidDob("2000-02-29")); // leap year
+    EXPECT_TRUE(isValidDob("1999-12-31"));
+}
+
+TEST(IsValidDobTest, RejectsInvalidCalendarDates)
+{
+    EXPECT_FALSE(isValidDob("1900-00-00"));
+    EXPECT_FALSE(isValidDob("2021-02-30")); // February has 28/29 days
+    EXPECT_FALSE(isValidDob("2021-13-01")); // no month 13
+    EXPECT_FALSE(isValidDob("2021-04-31")); // April has 30 days
+    EXPECT_FALSE(isValidDob("2021-02-29")); // not a leap year
+}
+
+TEST(IsValidDobTest, RejectsMalformedStrings)
+{
+    EXPECT_FALSE(isValidDob(""));
+    EXPECT_FALSE(isValidDob("1990/01/01"));
+    EXPECT_FALSE(isValidDob("90-01-01"));
+    EXPECT_FALSE(isValidDob("not a date"));
 }
 
 TEST(ContactStoreTest, StartsEmpty)
@@ -28,10 +53,11 @@ TEST(ContactStoreTest, StartsEmpty)
 TEST(ContactStoreTest, AddReturnsIndexAndIncreasesCount)
 {
     ContactStore store;
-    size_t index = store.add(makeContact("Ada Lovelace"));
+    size_t index = store.add(makeContact("Ada", "Lovelace"));
     EXPECT_EQ(index, 0u);
     EXPECT_EQ(store.count(), 1u);
-    EXPECT_EQ(store.get(0).name, "Ada Lovelace");
+    EXPECT_EQ(store.get(0).firstName, "Ada");
+    EXPECT_EQ(store.get(0).lastName, "Lovelace");
 }
 
 TEST(ContactStoreTest, GetOutOfRangeThrows)
@@ -43,13 +69,13 @@ TEST(ContactStoreTest, GetOutOfRangeThrows)
 TEST(ContactStoreTest, UpdateReplacesContactAtIndex)
 {
     ContactStore store;
-    store.add(makeContact("Ada Lovelace"));
-    Contact updated = makeContact("Ada L.");
+    store.add(makeContact("Ada", "Lovelace"));
+    Contact updated = makeContact("Ada", "L.");
     updated.company = "Analytical Engines Inc";
     store.update(0, updated);
 
     Contact result = store.get(0);
-    EXPECT_EQ(result.name, "Ada L.");
+    EXPECT_EQ(result.lastName, "L.");
     EXPECT_EQ(result.company, "Analytical Engines Inc");
 }
 
@@ -69,8 +95,8 @@ TEST(ContactStoreTest, RemoveShiftsLaterIndicesDown)
     store.remove(0);
 
     ASSERT_EQ(store.count(), 2u);
-    EXPECT_EQ(store.get(0).name, "Bob");
-    EXPECT_EQ(store.get(1).name, "Carol");
+    EXPECT_EQ(store.get(0).firstName, "Bob");
+    EXPECT_EQ(store.get(1).firstName, "Carol");
 }
 
 TEST(ContactStoreTest, RemoveOutOfRangeThrows)
@@ -82,9 +108,9 @@ TEST(ContactStoreTest, RemoveOutOfRangeThrows)
 TEST(ContactStoreTest, FindByNameIsCaseInsensitiveSubstringMatch)
 {
     ContactStore store;
-    store.add(makeContact("Ada Lovelace"));
-    store.add(makeContact("Alan Turing"));
-    store.add(makeContact("Grace Hopper"));
+    store.add(makeContact("Ada", "Lovelace"));
+    store.add(makeContact("Alan", "Turing"));
+    store.add(makeContact("Grace", "Hopper"));
 
     std::vector<size_t> matches = store.findByName("l");
     EXPECT_THAT(matches, testing::ElementsAre(0u, 1u));
@@ -106,8 +132,8 @@ TEST(ContactStoreTest, LoadFromMissingFileStartsEmpty)
 TEST(ContactStoreTest, SaveThenLoadRoundTrips)
 {
     ContactStore store;
-    store.add(makeContact("Ada Lovelace"));
-    store.add(makeContact("Alan Turing"));
+    store.add(makeContact("Ada", "Lovelace"));
+    store.add(makeContact("Alan", "Turing"));
 
     const char* path = "contact_store_test_roundtrip.json";
     store.save(path);
@@ -116,8 +142,29 @@ TEST(ContactStoreTest, SaveThenLoadRoundTrips)
     reloaded.load(path);
 
     ASSERT_EQ(reloaded.count(), 2u);
-    EXPECT_EQ(reloaded.get(0).name, "Ada Lovelace");
-    EXPECT_EQ(reloaded.get(1).name, "Alan Turing");
+    EXPECT_EQ(reloaded.get(0).firstName, "Ada");
+    EXPECT_EQ(reloaded.get(1).firstName, "Alan");
+
+    std::filesystem::remove(path);
+}
+
+TEST(ContactStoreTest, OptionalFieldsRoundTripAsNullWhenSkipped)
+{
+    ContactStore store;
+    Contact c = makeContact("Ada", "Lovelace");
+    c.company = std::nullopt;
+    c.dob = std::nullopt;
+    store.add(c);
+
+    const char* path = "contact_store_test_optional_roundtrip.json";
+    store.save(path);
+
+    ContactStore reloaded;
+    reloaded.load(path);
+
+    ASSERT_EQ(reloaded.count(), 1u);
+    EXPECT_EQ(reloaded.get(0).company, std::nullopt);
+    EXPECT_EQ(reloaded.get(0).dob, std::nullopt);
 
     std::filesystem::remove(path);
 }
