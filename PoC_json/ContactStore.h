@@ -21,6 +21,10 @@ struct Contact
 // "2021-02-30").
 bool isValidDob(const std::string& dob);
 
+// Returns true if phone matches the Korean mobile format "010-XXXX-XXXX"
+// (exactly that prefix and digit grouping).
+bool isValidPhone(const std::string& phone);
+
 // Manages an in-memory contact list backed by a JSON file (via JsonLib).
 // Indices are positions in the current list, valid until the next add/
 // remove call.

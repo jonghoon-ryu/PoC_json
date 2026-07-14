@@ -97,12 +97,25 @@ std::optional<std::string> promptDob()
     }
 }
 
+std::string promptPhone()
+{
+    while (true)
+    {
+        std::string phone = prompt("Phone (010-XXXX-XXXX): ");
+        if (isValidPhone(phone))
+        {
+            return phone;
+        }
+        std::cout << "Invalid phone number, please try again.\n";
+    }
+}
+
 Contact readContactFromInput()
 {
     Contact c;
     c.firstName = prompt("First name: ");
     c.lastName = prompt("Last name: ");
-    c.phone = prompt("Phone: ");
+    c.phone = promptPhone();
     c.company = promptCompany();
     c.dob = promptDob();
     return c;

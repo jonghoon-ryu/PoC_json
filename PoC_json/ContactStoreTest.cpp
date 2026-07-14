@@ -44,6 +44,28 @@ TEST(IsValidDobTest, RejectsMalformedStrings)
     EXPECT_FALSE(isValidDob("not a date"));
 }
 
+TEST(IsValidPhoneTest, AcceptsKoreanMobileFormat)
+{
+    EXPECT_TRUE(isValidPhone("010-1234-5678"));
+    EXPECT_TRUE(isValidPhone("010-0000-0000"));
+}
+
+TEST(IsValidPhoneTest, RejectsWrongPrefixOrGrouping)
+{
+    EXPECT_FALSE(isValidPhone("011-1234-5678")); // not 010
+    EXPECT_FALSE(isValidPhone("010-123-5678")); // only 3 digits in middle group
+    EXPECT_FALSE(isValidPhone("010-1234-567")); // only 3 digits in last group
+    EXPECT_FALSE(isValidPhone("01012345678")); // missing hyphens
+    EXPECT_FALSE(isValidPhone("010.1234.5678")); // wrong separators
+}
+
+TEST(IsValidPhoneTest, RejectsMalformedStrings)
+{
+    EXPECT_FALSE(isValidPhone(""));
+    EXPECT_FALSE(isValidPhone("not a phone"));
+    EXPECT_FALSE(isValidPhone("010-abcd-5678"));
+}
+
 TEST(ContactStoreTest, StartsEmpty)
 {
     ContactStore store;

@@ -12,3 +12,6 @@ packages/
 
 # Runtime-generated contact data (test/demo output, not source)
 contacts.json
+
+# Editor atomic-save temp folders
+enc_temp_folder/

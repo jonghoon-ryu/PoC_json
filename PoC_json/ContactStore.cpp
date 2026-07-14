@@ -81,6 +81,19 @@ bool isValidDob(const std::string& dob)
     return ymd.ok();
 }
 
+bool isValidPhone(const std::string& phone)
+{
+    if (phone.size() != 13)
+    {
+        return false;
+    }
+    if (phone.substr(0, 3) != "010" || phone[3] != '-' || phone[8] != '-')
+    {
+        return false;
+    }
+    return isAllDigits(phone.substr(4, 4)) && isAllDigits(phone.substr(9, 4));
+}
+
 void ContactStore::load(const std::string& path)
 {
     if (std::filesystem::exists(path))
